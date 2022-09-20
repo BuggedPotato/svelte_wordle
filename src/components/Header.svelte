@@ -4,6 +4,7 @@
   import Home from '../routes/Home.svelte';
   import About from '../routes/About.svelte';
   import Board from '../routes/Board.svelte';
+  import Pokemon from '../routes/Pokemon.svelte';
 
   export let url = "";
 </script>
@@ -18,6 +19,7 @@
         <Link to="" class="mr-5 hover:text-gray-500">Home</Link>
         <Link to="about" class="mr-5 hover:text-gray-500">About</Link>
         <Link to="board" class="mr-5 hover:text-gray-500">Board</Link>
+        <Link to="pokemon" class="mr-5 hover:text-gray-500">Pokemon</Link>
       </nav>
     </div>
   </header>
@@ -25,5 +27,6 @@
     <Route path="/" component={Home} />
     <Route path="about" component={About} />
     <Route path="board" component={Board} />
+    <Route path="pokemon" component={Pokemon} />
   </main>
 </Router>
