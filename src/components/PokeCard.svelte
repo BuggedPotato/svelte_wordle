@@ -8,7 +8,6 @@
         
         if( res.ok )
         {
-          console.log( data )
           return data;
         }
         else
