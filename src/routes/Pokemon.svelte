@@ -2,7 +2,7 @@
   import PokeCard from "../components/PokeCard.svelte";
   
   let searched = "";
-  let raw;
+  let raw = [];
   let data = [];
   assign();
   async function assign()
@@ -30,9 +30,11 @@
     // data = data;
     console.log(data)
   }
+
+  $: filteredList = raw.filter(item => item.name.includes( searched ) );
 </script>
 
-<div class="text-gray-200">
+<div class="text-gray-200 w-full">
     <section class="text-gray-400 bg-gray-900 body-font">
       <input type="text" bind:value={searched} on:input={handleInput}/>
         <div class="container">
@@ -48,7 +50,7 @@
                 {/each}
             {/await} -->
             {#key data} <!-- ¯\_(ツ)_/¯ -->
-              {#each data as poke}
+              {#each filteredList as poke}
                 <PokeCard url={poke.url} />
               {/each}
             {/key}
