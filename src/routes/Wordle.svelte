@@ -1,12 +1,13 @@
 <script>
     import Tile from "../components/Tile.svelte";
     import Keyboard from "../components/Keyboard.svelte";
-    // import {wordsList} from "random-words";
-    
+    import { onMount } from "svelte";    
 
     let wordLength = 5;
     const tries = 6;
     let length = wordLength * tries;
+    let guess = "";
+    let currentTry = 0;
 
     var raw = [];
     var data = [];
@@ -48,10 +49,17 @@
         word = newWord(wordLength);
         console.log(word);
     }
+
+    function handleSubmit( e )
+    {
+        // TODO
+        if( currentTry < tries )
+            currentTry++;
+    }
 </script>
 
-<div class="flex flex-col w-full h-screen items-center">
-    <div class="w-4/12 h-full mb-16">
+<div class="flex flex-col w-screen h-screen items-center">
+    <div class="w-1/2 mb-16">
         <label class="text-gray-200" for="wordLength">Word length:</label>
         <select id="wordLength" bind:value={wordLength} on:change="{ handleChange }" disabled={!go}>
             {#each Array(6) as _, i}
@@ -63,9 +71,13 @@
         {/await}
         <div class="flex flex-wrap h-full">
             {#each Array(length) as _, i}
-                <Tile size={100/wordLength - 1 + "%"} id={i} /> <!-- ¯\_(ツ)_/¯ -->
+                {#if Math.floor(i / wordLength) == currentTry}
+                    <Tile size={100/wordLength - 1 + "%"} id={guess[(i + wordLength) % wordLength] ? guess[(i + wordLength) % wordLength] : ""} />
+                {:else}
+                    <Tile size={100/wordLength - 1 + "%"} id={i} /> <!-- ¯\_(ツ)_/¯ -->
+                {/if}
             {/each}
         </div>
     </div>
-    <Keyboard />
+    <Keyboard bind:guess={guess} bind:wordLength={wordLength} on:submitGuess={handleSubmit} />
 </div>
