@@ -1,13 +1,15 @@
 <script>
     import Tile from "../components/Tile.svelte";
     import Keyboard from "../components/Keyboard.svelte";
-    import { onMount } from "svelte";    
 
     let wordLength = 5;
-    const tries = 6;
-    let length = wordLength * tries;
+    const availableTries = 6;
+    let length = wordLength * availableTries;
     let guess = "";
     let currentTry = 0;
+    let tries = Array(availableTries);
+    for( let i = 0; i < availableTries; i++ )
+        tries[i] = {text: "", guess: []};
 
     var raw = [];
     var data = [];
@@ -45,16 +47,49 @@
 
     function handleChange()
     {
-        length = wordLength * tries;
+        length = wordLength * availableTries;
         word = newWord(wordLength);
-        console.log(word);
+        for( let i = 0; i < availableTries; i++ )
+            tries[i] = {text: "", guess: []};
+        currentTry = 0;
     }
 
     function handleSubmit( e )
     {
-        // TODO
-        if( currentTry < tries )
+        if( tries[currentTry].text.length < wordLength ){
+            alert( "The word is too short" );
+            return;
+        }
+        if( currentTry < availableTries - 1 )
+        {
+            checkGuess( tries[currentTry].text );
             currentTry++;
+            console.log( tries );
+        }
+    }
+
+    const checkGuess = ( string ) => {
+        for( let i = 0; i < wordLength; i++ ){
+            if( word[i] == string[i] )
+                tries[currentTry].guess[i] = 1;
+            else if( word.toString().includes( string[i] ) )
+                tries[currentTry].guess[i] = 0;
+            else
+                tries[currentTry].guess[i] = -1;
+        }
+    }
+
+    const getTile = ( i ) => {
+        const size = 100/wordLength - 1 + "%";
+        const sourceChar = tries[Math.floor(i / wordLength)].text[(i + wordLength) % wordLength];
+        const char = sourceChar ? sourceChar : "";
+        const sourceColour = tries[Math.floor(i / wordLength)].guess[(i + wordLength) % wordLength];
+        let colour = '#101726';
+        if( sourceColour == 1 )
+            colour = "green";
+        else if( sourceColour == 0 )
+            colour = "yellow";
+        return <Tile id={char} size={size} colour={colour} />
     }
 </script>
 
@@ -69,15 +104,13 @@
         {#await word then val}
             <h1 class="text-gray-200">{val}</h1>
         {/await}
+
         <div class="flex flex-wrap h-full">
             {#each Array(length) as _, i}
-                {#if Math.floor(i / wordLength) == currentTry}
-                    <Tile size={100/wordLength - 1 + "%"} id={guess[(i + wordLength) % wordLength] ? guess[(i + wordLength) % wordLength] : ""} />
-                {:else}
-                    <Tile size={100/wordLength - 1 + "%"} id={i} /> <!-- ¯\_(ツ)_/¯ -->
-                {/if}
+                getTile( i );
             {/each}
         </div>
+
     </div>
-    <Keyboard bind:guess={guess} bind:wordLength={wordLength} on:submitGuess={handleSubmit} />
+    <Keyboard bind:guess={tries[currentTry].text} bind:wordLength={wordLength} on:submitGuess={handleSubmit} />
 </div>

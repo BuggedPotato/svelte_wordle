@@ -2,25 +2,25 @@
     import { createEventDispatcher } from "svelte";
     import Tile from "./Tile.svelte";
     let template = "qwertyuiop asdfghjkl ^zxcvbnm<".toUpperCase();
-    let chars = "qwertyuiopasdfghjklzxcvbnm".toUpperCase().split("");
+    let chars = "qweęrtyuioópaąsśdfghjklłzżźxcćvbnńm".toUpperCase().split("");
 
     export let guess;
     export let wordLength;
     const dispatch = createEventDispatcher();
 
-    const handleInput = ( key ) =>{
+    const handleInput = ( key ) => {
         if( key == "ENTER" )
-            dispatch( "submitGuess", {
-                guess: guess
-            } );
-        else if( key == "<=" )
-            guess = guess.slice( 0, -1 );
-        else {
-            if( guess.length + 1 > wordLength )
-                return;
+        dispatch( "submitGuess", {
+            guess: guess
+        } );
+        else if( key == "<=" || key == "BACKSPACE" )
+        guess = guess.slice( 0, -1 );
+        else if( chars.includes( key ) && guess.length + 1 <= wordLength ) {
             guess += key;
         }
     }
+
+    document.addEventListener( "keydown", (e)=> handleInput( e.key.toUpperCase() ) );
 </script>
 
 <div class="w-5/12 h-fit sticky bottom-0 flex flex-col">
