@@ -5,21 +5,35 @@
     let wordLength = 5;
     const availableTries = 6;
     let length = wordLength * availableTries;
-    let guess = "";
     let currentTry = 0;
+    const colours = {
+        default: "#101726",
+        correct: "#32b015",
+        miss: "#fad905",
+        ded: "black"
+    }
+
+    let usedChars = {
+        guessed: "",
+        missed: "",
+        ded: ""
+    }
+
     let tries = Array(availableTries);
     for( let i = 0; i < availableTries; i++ )
         tries[i] = {text: "", guess: []};
 
     var raw = [];
     var data = [];
-    let word = init();
+    $: globProps = Array(length).fill(undefined).map((_,i)=>getTile(tries[Math.floor(i / wordLength)].text[(i + wordLength) % wordLength], tries[Math.floor(i / wordLength)].guess[(i + wordLength) % wordLength] ));
+    let word = "";
+    init();
     let go = false;
 
     async function init()
     {
         raw = await getWords();
-        return newWord( wordLength );
+        newWord( wordLength );
     }
 
     async function getWords()
@@ -30,9 +44,12 @@
 
     function newWord( length )
     {
+        usedChars.guessed = "";
+        usedChars.missed = "";
+        usedChars.ded = "";
         data = raw.filter( word => word.length == length );
         if( data.length == 0 )
-            return;
+            return null;
         console.log(data.length)
         let i = Math.round(Math.random() * data.length);
         console.log("i: ", i)
@@ -42,13 +59,13 @@
             i = Math.round(Math.random() * data.length);
         }
         go = true;
-        return data[i];
+        word = data[i].toUpperCase();
     }
 
     function handleChange()
     {
         length = wordLength * availableTries;
-        word = newWord(wordLength);
+        newWord(wordLength);
         for( let i = 0; i < availableTries; i++ )
             tries[i] = {text: "", guess: []};
         currentTry = 0;
@@ -64,32 +81,40 @@
         {
             checkGuess( tries[currentTry].text );
             currentTry++;
-            console.log( tries );
         }
     }
 
     const checkGuess = ( string ) => {
         for( let i = 0; i < wordLength; i++ ){
-            if( word[i] == string[i] )
+            if( word[i] == string[i] ){
                 tries[currentTry].guess[i] = 1;
-            else if( word.toString().includes( string[i] ) )
+                usedChars.guessed += string[i];
+            }
+            else if( word.toString().includes( string[i] ) ){
                 tries[currentTry].guess[i] = 0;
-            else
+                usedChars.missed += string[i];
+            }
+            else{
                 tries[currentTry].guess[i] = -1;
+                usedChars.ded += string[i];
+            }
         }
     }
 
-    const getTile = ( i ) => {
+    const getTile = ( sourceChar, sourceColour ) => {
         const size = 100/wordLength - 1 + "%";
-        const sourceChar = tries[Math.floor(i / wordLength)].text[(i + wordLength) % wordLength];
         const char = sourceChar ? sourceChar : "";
-        const sourceColour = tries[Math.floor(i / wordLength)].guess[(i + wordLength) % wordLength];
-        let colour = '#101726';
+        let colour = colours.default;
         if( sourceColour == 1 )
-            colour = "green";
+            colour = colours.correct;
         else if( sourceColour == 0 )
-            colour = "yellow";
-        return <Tile id={char} size={size} colour={colour} />
+            colour = colours.miss;
+        else if( sourceColour == -1 )
+            colour = colours.ded;
+        const props = {
+            id: char, size: size, colour: colour
+        };
+        return props;
     }
 </script>
 
@@ -106,11 +131,11 @@
         {/await}
 
         <div class="flex flex-wrap h-full">
-            {#each Array(length) as _, i}
-                getTile( i );
+            {#each globProps as props }
+                <Tile id={props.id} colour={props.colour} size={props.size} />
             {/each}
         </div>
 
     </div>
-    <Keyboard bind:guess={tries[currentTry].text} bind:wordLength={wordLength} on:submitGuess={handleSubmit} />
+    <Keyboard bind:usedChars={usedChars} colours={colours} bind:guess={tries[currentTry].text} bind:wordLength={wordLength} on:submitGuess={handleSubmit} />
 </div>
