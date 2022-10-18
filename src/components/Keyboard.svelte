@@ -1,6 +1,8 @@
 <script>
     import { createEventDispatcher } from "svelte";
     import Tile from "./Tile.svelte";
+    import { debugCode } from "../assets/debug";
+
     let template = "qwertyuiop asdfghjkl ^zxcvbnm<".toUpperCase();
     $: tiles = template.split( "" ).map( ( char, i )=>{
         let c = colours.default;
@@ -19,8 +21,15 @@
     export let wordLength;
     export let colours;
     export let usedChars;
+    export let go;
 
     const handleInput = ( key ) => {
+        if( debugCode.length > 0 && key == debugCode[0] ){
+            debugCode.shift();
+            if( debugCode.length == 0 )
+                dispatch( "debugOn" );
+        }
+        if( !go ) return;
         if( key == "ENTER" )
         dispatch( "submitGuess", {
             guess: guess
@@ -36,26 +45,13 @@
 </script>
 
 <div class="w-5/12 h-fit sticky bottom-0 flex flex-row flex-wrap justify-center">
-    <!-- {#each template.split( " " ) as row, i}
-        <div class="flex justify-center">
-        {#each row as char}
-            {#if char == '^'}
-                <Tile on:click={(e)=> handleInput("ENTER") } id="ENTER" size="10%" />
-            {:else if char == '<'}
-                <Tile on:click={(e)=> handleInput("<=") } id="<=" size="10%" />
-            {:else}
-                <Tile on:click={(e)=> handleInput(char) } id={char} size="10%" colour={tiles[i].colour} />
-            {/if}
-        {/each}
-        </div>
-    {/each} -->
     {#each tiles as tile}
         {#if tile.char == " "}
             <span></span>
         {:else if tile.char == '^'}
-            <Tile on:click={(e)=> handleInput("ENTER") } id="ENTER" size="10%" />
+            <Tile on:click={(e)=> handleInput("ENTER") } id="ENTER" size="10%" colour={tile.colour} />
         {:else if tile.char == '<'}
-            <Tile on:click={(e)=> handleInput("<=") } id="<=" size="10%" />
+            <Tile on:click={(e)=> handleInput("<=") } id="<=" icon="bi-backspace" size="10%" colour={tile.colour} />
         {:else}
             <Tile on:click={(e)=> handleInput(tile.char) } id={tile.char} size="9%" colour={tile.colour} />
         {/if}
